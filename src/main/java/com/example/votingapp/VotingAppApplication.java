@@ -25,7 +25,7 @@ class VotingController {
     public String showInfoPage() {
         return "info";
     }
-
+    //I added a register end point
     @PostMapping("/register")
     public String registerVoter(@RequestParam String fullname,
                                 @RequestParam String votingnumber,
