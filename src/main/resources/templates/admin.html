@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f3f4f6;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      position: relative;
+    }
+
+    h1 {-
+      color: #1e88e5;
+      margin-bottom: 20px;
+    }
+
+    .votes {
+      font-size: 20px;
+      margin: 15px 0;
+    }
+
+    .stats-container {
+      width: 80%;
+      margin: 30px auto;
+    }
+
+    canvas {
+      width: 300px !important;
+      height: 300px !important;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    .commentary {
+      font-size: 18px;
+      margin-top: 20px;
+      font-weight: bold;
+      color: #ff7043;
+    }
+
+    .footer {
+      font-size: 14px;
+      color: #555;
+      margin-top: 40px;
+    }
+
+    .narrative-container {
+      margin-top: 40px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    /* Position the current time and date at the bottom right corner */
+    .current-time {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      font-size: 16px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+<h1>Admin Panel</h1>
+
+<div class="votes">
+  <p>Party 1 Votes: <span th:text="${partyOneVotes}"></span></p>
+  <p>Party 2 Votes: <span th:text="${partyTwoVotes}"></span></p>
+</div>
+
+<div class="stats-container" id="chartContainer">
+  <canvas id="votesPieChart" style="display: none;"></canvas>
+  <p id="noVotesMessage" style="display: none;">No votes yet</p>
+</div>
+
+<!-- Commentary Updates -->
+<div class="commentary" id="commentary">
+  <!-- Dynamic commentary will appear here -->
+</div>
+
+<div class="narrative-container" id="narrative">
+  <p>Vote statistics are being tracked in real-time. Data will update dynamically as votes are cast.</p>
+</div>
+
+<div class="footer">
+  <p>Real-time vote tracking powered by Spring Boot & Chart.js</p>
+</div>
+
+<!-- Current Time and Date at the Bottom Right Corner -->
+<div class="current-time" id="currentTime">
+  <!-- Dynamic date and time will appear here -->
+</div>
+
+<script>
+  // Display current date and time
+  function updateCurrentTime() {
+    const now = new Date();
+    const options = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: true
+    };
+    const currentTime = now.toLocaleString('en-US', options);
+    document.getElementById('currentTime').textContent = currentTime;
+  }
+
+  // Update time every second
+  setInterval(updateCurrentTime, 1000);
+
+  // Data from Spring Boot model (replace with Thymeleaf)
+  const votesData = {
+    partyOneVotes: [[${partyOneVotes}]],
+    partyTwoVotes: [[${partyTwoVotes}]]
+  };
+
+  // Update commentary based on the current votes
+  function updateCommentary() {
+    const partyOneVotes = votesData.partyOneVotes;
+    const partyTwoVotes = votesData.partyTwoVotes;
+    let commentaryText = "";
+
+    if (partyOneVotes > partyTwoVotes) {
+      commentaryText = "Party 1 is currently ahead!";
+    } else if (partyTwoVotes > partyOneVotes) {
+      commentaryText = "Party 2 is currently ahead!";
+    } else {
+      commentaryText = "It's a tie! Both parties have equal votes.";
+    }
+
+    document.getElementById('commentary').textContent = commentaryText;
+  }
+
+  // Display the chart or "No votes yet" message based on the vote counts
+  function renderChart() {
+    const partyOneVotes = votesData.partyOneVotes;
+    const partyTwoVotes = votesData.partyTwoVotes;
+
+    if (partyOneVotes === 0 && partyTwoVotes === 0) {
+      document.getElementById('chartContainer').style.display = 'block';
+      document.getElementById('noVotesMessage').style.display = 'block';
+      document.getElementById('votesPieChart').style.display = 'none';
+    } else {
+      document.getElementById('chartContainer').style.display = 'block';
+      document.getElementById('noVotesMessage').style.display = 'none';
+      document.getElementById('votesPieChart').style.display = 'block';
+
+      const ctx = document.getElementById('votesPieChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Party 1', 'Party 2'],
+          datasets: [{
+            data: [partyOneVotes, partyTwoVotes],
+            backgroundColor: ['#1e88e5', '#ff7043'],
+            borderColor: ['#1e88e5', '#ff7043'],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(tooltipItem) {
+                  return tooltipItem.label + ': ' + tooltipItem.raw + ' votes';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  // Initial function calls to set up the page
+  updateCommentary();
+  renderChart();
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(to bottom, #f9f9f9, #ffcccc);
+            color: #333;
+        }
+        h1 {
+            color: #d32f2f;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        h2 {
+            color: #555;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        .party-description {
+            margin: 20px auto;
+            font-size: 1.2em;
+            color: #444;
+            max-width: 600px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        button:hover {
+            background-color: #b71c1c;
+            transform: scale(1.1);
+        }
+        .feedback {
+            margin-top: 30px;
+            font-size: 20px;
+            color: green;
+        }
+        .info {
+            margin-top: 40px;
+            font-size: 16px;
+            color: #555;
+        }
+    </style>
+    <script>
+        async function castVote(party) {
+            const response = await fetch('/vote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `party=${party}`
+            });
+            const result = await response.text();
+            document.getElementById('feedback').innerText = result;
+
+            // Set a timeout to remove the feedback after 3 seconds
+            setTimeout(function() {
+                document.getElementById('feedback').innerText = '';
+            }, 3000);  // 3000 milliseconds = 3 seconds
+        }
+    </script>
+
+</head>
+<body>
+<h1>Welcome, <span th:text="${fullname}"></span>!</h1>
+<p>Your NID: <span th:text="${votingnumber}"></span></p>
+<p>Your Email: <span th:text="${email}"></span></p>
+
+<h2>Make Your Voice Heard!</h2>
+<div class="party-description">
+    <strong>Party 1:</strong> The "Visionary Future Party" is dedicated to innovation, education, and sustainable growth.
+</div>
+<button onclick="castVote('party1')">Vote for Party 1</button>
+
+<div class="party-description">
+    <strong>Party 2:</strong> The "Unity and Prosperity Party" focuses on bridging communities, creating jobs, and fostering economic stability.
+</div>
+<button onclick="castVote('party2')">Vote for Party 2</button>
+
+<div id="feedback" class="feedback"></div>
+</body>
+
+</html>
