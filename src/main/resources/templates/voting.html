@@ -59,22 +59,25 @@
     </style>
     <script>
         async function castVote(party) {
+            const votingNumber = "[[${votingnumber}]]"; // Thymeleaf replaces this dynamically
+
             const response = await fetch('/vote', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `party=${party}`
+                body: `party=${party}&votingnumber=${votingNumber}`
             });
+
             const result = await response.text();
             document.getElementById('feedback').innerText = result;
 
-            // Set a timeout to remove the feedback after 3 seconds
-            setTimeout(function() {
+            setTimeout(() => {
                 document.getElementById('feedback').innerText = '';
-            }, 3000);  // 3000 milliseconds = 3 seconds
+            }, 3000);
         }
     </script>
+
 
 </head>
 <body>
