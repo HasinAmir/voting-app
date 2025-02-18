@@ -59,18 +59,25 @@
     </style>
     <script>
         async function castVote(party) {
-            const votingNumber = "[[${votingnumber}]]"; // Thymeleaf replaces this dynamically
+            const nidNumber  = "[[${nidNumber}]]"; // Thymeleaf replaces this dynamically
 
             const response = await fetch('/vote', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `party=${party}&votingnumber=${votingNumber}`
+                body: `party=${party}&nidNumber=${nidNumber}`
             });
 
             const result = await response.text();
             document.getElementById('feedback').innerText = result;
+
+            // Redirect after a successful vote
+            if (!result.includes('Error')) {
+                setTimeout(() => {
+                    window.location.href = '/'; // Redirect to the info page
+                }, 2000); // Redirect after 2 seconds (adjust the time as needed)
+            }
 
             setTimeout(() => {
                 document.getElementById('feedback').innerText = '';
@@ -79,10 +86,11 @@
     </script>
 
 
+
 </head>
 <body>
 <h1>Welcome, <span th:text="${fullname}"></span>!</h1>
-<p>Your NID: <span th:text="${votingnumber}"></span></p>
+<p>Your NID: <span th:text="${nidNumber}"></span></p>
 <p>Your Email: <span th:text="${email}"></span></p>
 
 <h2>Make Your Voice Heard!</h2>

@@ -1,11 +1,17 @@
 package com.example.votingapp;
-import com.example.votingapp.model.Voter;
 import com.example.votingapp.repository.VoterRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import com.example.votingapp.Entity.Voter;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -18,11 +24,11 @@ public class VotingAppApplication {
 
 @Controller
 @RequestMapping("/")
-public class VotingController {
+class VotingController {
 
+    private final VoterRepository voterRepository;
     private final AtomicInteger partyOneVotes = new AtomicInteger(0);
     private final AtomicInteger partyTwoVotes = new AtomicInteger(0);
-    private final VoterRepository voterRepository;
 
     public VotingController(VoterRepository voterRepository) {
         this.voterRepository = voterRepository;
@@ -34,42 +40,42 @@ public class VotingController {
     }
 
     @PostMapping("/register")
-    public String registerVoter(@RequestParam String fullname,
-                                @RequestParam String votingnumber,
-                                @RequestParam String email,
+    public String registerVoter(@RequestParam("fullname") String fullname,
+                                @RequestParam("nidNumber") String nidNumber,
+                                @RequestParam("email") String email,
                                 Model model) {
-        if (!voterRepository.existsByVotingNumber(votingnumber)) {
-            Voter voter = new Voter(votingnumber, fullname, email);
-            voterRepository.save(voter);
-        }
+        Voter voter = new Voter();
+        voter.setNidNumber(nidNumber);
+        voter.setFullName(fullname);
+        voter.setEmail(email);
+        voterRepository.save(voter);
 
         model.addAttribute("fullname", fullname);
-        model.addAttribute("votingnumber", votingnumber);
+        model.addAttribute("nidNumber", nidNumber);
         model.addAttribute("email", email);
-        return "voting";
+        return "voting"; // Redirect to the voting page
     }
 
     @PostMapping("/vote")
-    @ResponseBody
-    public String vote(@RequestParam String party, @RequestParam String votingnumber) {
-        Voter voter = voterRepository.findById(votingnumber).orElse(null);
-        if (voter == null) {
+    public String vote(@RequestParam("nidNumber") String nidNumber, @RequestParam("party") String party) {
+        Optional<Voter> voterOpt = voterRepository.findById(nidNumber);
+
+        if (voterOpt.isEmpty()) {
             return "Error: Voter not found!";
         }
-        if (voter.isHasVoted()) {
+
+        Voter voter = voterOpt.get();
+        if (voter.getEmail().equals("VOTED")) {
             return "Error: You have already voted!";
         }
 
-        if ("party1".equals(party)) {
+        if ("party1".equalsIgnoreCase(party)) {
             partyOneVotes.incrementAndGet();
-        } else if ("party2".equals(party)) {
+        } else if ("party2".equalsIgnoreCase(party)) {
             partyTwoVotes.incrementAndGet();
+
         }
-
-        voter.setHasVoted(true);
-        voterRepository.save(voter);
-
-        return "Vote registered!";
+        return "Voted successfully";
     }
 
     @GetMapping("/admin")
@@ -79,4 +85,20 @@ public class VotingController {
         return "admin";
     }
 }
+@RestController
+@RequestMapping("/check-nid")
+class VoterController {
 
+    @Autowired
+    private VoterRepository voterRepository;
+
+    @PostMapping
+    public Map<String, Boolean> checkNid(@RequestBody Map<String, String> request) {
+        String nidNumber = request.get("nidNumber");
+        boolean exists = voterRepository.existsByNidNumber(nidNumber);
+
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("exists", exists);
+        return response;
+    }
+}
