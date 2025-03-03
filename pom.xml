@@ -22,12 +22,23 @@
         <java.version>17</java.version>
     </properties>
 
+
+
     <dependencies>
         <!-- Thymeleaf for rendering HTML templates -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
 
         <!-- Spring Data JPA for database operations -->
         <dependency>
@@ -41,6 +52,7 @@
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
+
 
         <!-- Spring Boot Starter Web for building REST APIs and serving web content -->
         <dependency>
