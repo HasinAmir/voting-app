@@ -62,6 +62,11 @@
       font-size: 16px;
     }
 
+    button:disabled {
+      background-color: gray;
+      cursor: not-allowed;
+    }
+
     button:hover {
       background-color: #0056b3;
     }
@@ -86,11 +91,66 @@
       <input type="email" id="email" name="email" required placeholder="john.doe@example.com">
     </div>
 
-    <button type="submit">Proceed to Vote</button>
+    <button type="button" id="sendOtp">Send OTP</button>
+
+    <div class="form-group">
+      <label for="otp">Enter OTP:</label>
+      <input type="text" id="otp" name="otp" required placeholder="Enter OTP" disabled>
+    </div>
+
+    <button type="button" id="verifyOtp" disabled>Verify OTP</button>
+    <button type="submit" id="proceedToVote" disabled>Proceed to Vote</button>
+
+    <div id="otp-message" style="text-align:center; margin-top:10px;"></div>
+
   </form>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     $(document).ready(function () {
+      $("#sendOtp").click(function () {
+        var email = $("#email").val();
+        if (!email) {
+          $("#otp-message").text("Please enter an email first!").css("color", "red");
+          return;
+        }
+
+        $.ajax({
+          type: "POST",
+          url: "/otp/generate", // Corrected endpoint
+          data: { email: email },
+          success: function (response) {
+            $("#otp").prop("disabled", false);
+            $("#verifyOtp").prop("disabled", false);
+            $("#otp-message").text("OTP sent to your email!").css("color", "green");
+          },
+          error: function () {
+            $("#otp-message").text("Error sending OTP!").css("color", "red");
+          }
+        });
+      });
+
+      $("#verifyOtp").click(function () {
+        var email = $("#email").val();
+        var otp = $("#otp").val();
+
+        $.ajax({
+          type: "POST",
+          url: "/otp/verify", // Corrected endpoint
+          data: { email: email, otp: otp },
+          success: function (response) {
+            if (response === "OTP Verified!") {
+              $("#proceedToVote").prop("disabled", false);
+              $("#otp-message").text("OTP Verified! You can now proceed to vote.").css("color", "green");
+            } else {
+              $("#otp-message").text("Invalid OTP!").css("color", "red");
+            }
+          },
+          error: function () {
+            $("#otp-message").text("Error verifying OTP!").css("color", "red");
+          }
+        });
+      });
+
       $("form").submit(function (event) {
         event.preventDefault(); // Prevent default form submission
 
@@ -100,12 +160,16 @@
 
         $.ajax({
           type: "POST",
-          url: "/check-nid", // Endpoint to check NID in database
+          url: "/check-nid",
           data: JSON.stringify({ nidNumber: nidNumber }),
           contentType: "application/json",
           success: function (response) {
             if (response.exists) {
               $("#error-message").text("User has already voted").css("color", "red");
+              setTimeout(function () {
+                $("#error-message").text(""); // Clear error message
+                $("form")[0].reset(); // Reset all form fields
+              }, 5000); // 5
             } else {
               $("form").unbind("submit").submit(); // Submit form if NID doesn't exist
             }
